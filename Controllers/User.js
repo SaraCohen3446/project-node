@@ -1,4 +1,4 @@
-import { userModel } from "../Models/User.js"
+import { userModel } from "../models/user.js"
 //שליפת כל המשתמשים 
 export const getAllUser = async (req, res) => {
     try {
@@ -97,3 +97,5 @@ export async function getUserByUsernamePassword_Login(req, res) {
         });
     }
 }
+
+

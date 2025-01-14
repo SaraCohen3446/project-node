@@ -1,4 +1,4 @@
-import { productModel } from "../Models/Product.js";
+import { productModel } from "../models/product.js";
 
 //שליפת כל המוצרים
 export const getAllProducts = async (req, res) => {

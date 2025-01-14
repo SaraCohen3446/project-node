@@ -1,5 +1,5 @@
 import { Schema, Types, model } from "mongoose"
-import { productSchema } from "./Product.js"
+import { productSchema } from "./product.js"
 
 
 

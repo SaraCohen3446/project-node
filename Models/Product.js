@@ -1,12 +1,13 @@
-import { Schema,model } from "mongoose";
+import { Schema, model } from "mongoose"
 
-const productSchema= Schema({
-    productId:Number,
-    productName:String,
-    description:String,
-    createDate:Date,
-    productPicture:String,
-    //מערך
+const productSchema = Schema({
+    name: String,
+    description: String,
+    date: { type: Date, default: new Date() },
+    img: String,
+    price: Number,
+    category: String,
+    ingredient: [String]
 })
-
-export const productModel=model("Product",productSchema)
+export {productSchema}
+export const productModel=model("product",productSchema)

@@ -1,5 +1,5 @@
-import { orderModel } from "../Models/Order.js"
-import { userModel } from "../Models/User.js"
+import { orderModel } from "../models/order.js"
+import { userModel } from "../models/user.js"
 //שליפת כל ההזמנות
 export const getAllOrders = async (req, res) => {
     try {
