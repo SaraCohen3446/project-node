@@ -16,7 +16,7 @@ export const getAllUser = async (req, res) => {
 export const getById = async (req, res) => {
     let { id } = req.params;
     try {
-        let data = await userModel.findById(id).select('-password');
+        let data = await userModel.findById(Types.ObjectId(id)).select('-password');
         if (!data) return res.status(404).json({ title: "cannot find by id", message: "user with such id not found" });
         res.json(data);
     } catch (err) {
