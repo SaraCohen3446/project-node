@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>טבלה של פונקציות API</title>
+    <title>table</title>
     <style>
         table {
             width: 100%;
@@ -13,7 +13,6 @@
         }
         h1{
             text-align: center;
-
         }
 
         th,
@@ -53,15 +52,21 @@
             </tr>
             <tr>
                 <td>POST</td>
-                <td>/api/orders</td>
+                <td>/api/order</td>
                 <td>body: userId, address, products</td>
-                <td>נתוני הזמנה במבנה JSON (כולל כתובת, מוצרים, userId)</td>
+                <td>
+                    {
+                    "userId": "user-id",
+                    "address": "כתובת",
+                    "products": [{"product": "product-id", "count": 2}]
+                    }
+                </td>
                 <td>הוספת הזמנה חדשה</td>
                 <td>404 - אם לא נמצא משתמש עם userId, 400 - אם לא כל הפרמטרים נמסרו</td>
             </tr>
             <tr>
                 <td>DELETE</td>
-                <td>/api/orders/:id</td>
+                <td>/api/order/:id</td>
                 <td>id</td>
                 <td>-</td>
                 <td>מחיקת הזמנה על פי מזהה, אם היא לא יצאה לדרך</td>
@@ -69,7 +74,7 @@
             </tr>
             <tr>
                 <td>GET</td>
-                <td>/api/orders/:id</td>
+                <td>/api/order/:id</td>
                 <td>userId</td>
                 <td>-</td>
                 <td>שליפת כל ההזמנות של משתמש מסוים</td>
@@ -77,14 +82,15 @@
             </tr>
             <tr>
                 <td>PUT</td>
-                <td>/api/orders/:id</td>
+                <td>/api/order/:id</td>
                 <td>id</td>
-                <td>אין (מעודכן בשרת)</td>
+                <td>-</td>
                 <td>עדכון סטטוס ההזמנה ל-"נשלחה"</td>
                 <td>404 - לא נמצא הזמנה עם ה-ID הזה</td>
             </tr>
         </tbody>
     </table>
+
     <h1>PRODUCT</h1>
     <table>
         <thead>
