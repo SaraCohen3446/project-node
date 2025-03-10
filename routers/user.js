@@ -3,11 +3,11 @@ import { getAllUser, getById, addUser, update, updatePassword, getUserByUsername
 import { isUserIn } from "../middlewares/isUserIn.js";
 
 const router = Router();
-router.get("/", isUserIn, getAllUser);
-router.get("/:id",isUserIn, getById);
+router.get("/", getAllUser);
+router.get("/:id", getById);
 router.post("/", addUser);
 router.post("/login", getUserByUsernamePassword_Login);
-router.put("/:id",isUserIn, update);
-router.put("/password/:id",isUserIn, updatePassword);
+router.put("/:id", update);
+router.put("/password/:id", updatePassword);
 
 export default router;
