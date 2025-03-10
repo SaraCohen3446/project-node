@@ -7,13 +7,16 @@ const userSchema = Schema({
     password: String,
     role: { type: String, default: "USER" },
     date: { type: Date, default: new Date() },
+    token: { type: String }
 });
+
+export const userModel = model("user", userSchema);
 
 /**
  * סכמה לאימות נתוני משתמש באמצעות Joi
  */
 export const validateUser = (user) => {
-    const schema = Joi.object({
+    const userJoi = Joi.object({
         userName: Joi.string().min(3).max(30).required().messages({
             "string.empty": "שם המשתמש הוא שדה חובה",
             "string.min": "שם המשתמש חייב להכיל לפחות 3 תווים",
@@ -23,12 +26,12 @@ export const validateUser = (user) => {
             "string.email": "האימייל אינו תקין",
             "string.empty": "האימייל הוא שדה חובה"
         }),
-        password: Joi.string().min(8).max(100).required().pattern(new RegExp("^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$")).messages({
-            "string.min": "הסיסמה חייבת להכיל לפחות 8 תווים",
-            "string.pattern.base": "הסיסמה חייבת לכלול אות גדולה, אות קטנה, מספר ותו מיוחד"
-        }),
-    });
-    return schema.validate(user);
+        // password: Joi.string().min(8).max(100).required().pattern(new RegExp("^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$")).messages({
+        //     "string.min": "הסיסמה חייבת להכיל לפחות 8 תווים",
+        //     "string.pattern.base": "הסיסמה חייבת לכלול אות גדולה, אות קטנה, מספר ותו מיוחד"
+        // }),
+    }).unknown();
+    return userJoi.validate(user);
 };
 
-export const userModel = model("user", userSchema);
+

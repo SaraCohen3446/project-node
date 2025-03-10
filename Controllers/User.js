@@ -1,5 +1,7 @@
-import { userModel } from "../models/user.js"
+import bcrypt from 'bcrypt';
+import { userModel, validateUser } from "../models/user.js";
 import { generateToken } from "../utils/generateToken.js";
+
 //שליפת כל המשתמשים 
 export const getAllUser = async (req, res) => {
     try {
@@ -8,10 +10,10 @@ export const getAllUser = async (req, res) => {
     }
     catch (err) {
         console.log(err);
-        res.status(400).json({ title: "cannot get all user", message: err.message })
-
+        res.status(400).json({ title: "cannot get all user", message: err.message });
     }
 }
+
 //שליפת משתמש לפי ID
 export const getById = async (req, res) => {
     let { id } = req.params;
@@ -24,72 +26,95 @@ export const getById = async (req, res) => {
         res.status(400).json({ title: "cannot get by id", message: err.message });
     }
 };
+
 //הוספת משתמש
 export const addUser = async (req, res) => {
     let { body } = req;
+    console.log(body);
+
     if (!body.password || !body.email)
-        return res.status(400).json({ title: "cannot add user", message: "password, email are require" })
-
-
-    // בדיקת תקינות המייל
-    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-    if (!emailRegex.test(body.email)) {
-        return res.status(400).json({ title: "invalid email", message: "Please provide a valid email address." });
-    }
+        return res.status(400).json({ title: "cannot add user", message: "password, email are required" });
+    //תקינות מjoy 
+    let validate = validateUser(req.body);
+    if (validate.error)
+        return res.status(400).json(validate.error.details[0].message);
 
     // בדיקת תקינות הסיסמה
-    const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!passwordRegex.test(body.password)) {
-        return res.status(400).json({
-            title: "invalid password",
-            message: "Password must be at least 8 characters long and include one uppercase letter, one lowercase letter, one number, and one special character."
-        });
-    }
+    // const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    // if (!passwordRegex.test(body.password)) {
+    //     return res.status(400).json({
+    //         title: "invalid password",
+    //         message: "Password must be at least 8 characters long and include one uppercase letter⏮️, one lowercase letter, one number, and one special character."
+    //     });
+    // }
+    
+    //בדיקה על מייל שהוא יחודי
+    let exist = await userModel.findOne({ email: body.email });
+    if (exist)
+        return res.status(409).json({ title: "cannot add user", message: "thid email alrday exist" });
+
+
+
     try {
-        let newUser = new userModel(body);
+
+        let token = generateToken({ ...body, role: "USER" });
+
+        // הצפנת הסיסמה לפני שמירת המשתמש
+        const hashedPassword = await bcrypt.hash(body.password, 10);
+
+
+        // שמירה של המשתמש עם הסיסמה המוצפנת
+        let newUser = new userModel({ ...body, password: hashedPassword, token: token });
         await newUser.save();
         res.json(newUser);
+    } catch (err) {
+        console.log(err);
+        res.status(400).json({ title: "cannot add this user", message: err.message });
     }
-    catch (err) {
-        console.log(err)
-        res.status(400).json({ title: "cannot add this user", message: err.message })
-    }
-}
+
+};
+
+
 
 //עדכון פרטי משתמש ללא סיסמא
-
 export const update = async (req, res) => {
     let { id } = req.params;
     let body = req.body;
     if (body.password)
-        return res.status(404).json({ title: "cannot update password", message: "cannot update here password" })
+        return res.status(404).json({ title: "cannot update password", message: "cannot update password here" });
+
     try {
         let data = await userModel.findByIdAndUpdate(id, body, { new: true }).select('-password');
         if (!data) return res.status(404).json({ title: "cannot update by id", message: "user with such id not found" });
         res.json(data);
     } catch (err) {
-        console.log(err)
+        console.log(err);
         res.status(400).json({ title: "cannot update", message: err.message });
     }
 }
-//עדכון  סיסמא
+
+//עדכון סיסמא
 export const updatePassword = async (req, res) => {
     let { id } = req.params;
     let body = req.body;
     if (!body.password || body.userName || body.email)
-        return res.status(404).json({ title: "only update password", message: "cannot update email userName" })
+        return res.status(404).json({ title: "only update password", message: "cannot update email or userName" });
+
     try {
-        let data = await userModel.findByIdAndUpdate(id, { password: body.password }, { new: true }).select('-password');
+
+
+        // הצפנת הסיסמה החדשה לפני שמירתה
+        const hashedPassword = await bcrypt.hash(body.password, 10);
+
+        let data = await userModel.findByIdAndUpdate(id, { password: hashedPassword }, { new: true }).select('-password');
         if (!data) return res.status(404).json({ title: "cannot update by id", message: "user with such id not found" });
         res.json(data);
     } catch (err) {
-        console.log(err)
+        console.log(err);
         res.status(400).json({ title: "cannot update", message: err.message });
     }
 }
 
-
-//כניסה 
 export async function getUserByUsernamePassword_Login(req, res) {
     try {
         if (!req.body.password || !req.body.userName)
@@ -98,7 +123,9 @@ export async function getUserByUsernamePassword_Login(req, res) {
         if (!data) {
             return res.status(404).json({ title: "no such user", message: "cannot found user with such username" });
         }
-        if (data.password != req.body.password)
+
+        let verifyPassword = await bcrypt.compare(req.body.password, data.password);
+        if (!verifyPassword)
             return res.status(404).json({ title: "cannot found user with such deatekies", message: "worng password" });
 
         let token = generateToken({ ...userModel, role: "USER" });
@@ -114,5 +141,3 @@ export async function getUserByUsernamePassword_Login(req, res) {
         res.status(400).json({ title: "cannot log in user", message: err.message });
     }
 }
-
-
