@@ -47,7 +47,7 @@ export const addUser = async (req, res) => {
     //         message: "Password must be at least 8 characters long and include one uppercase letter⏮️, one lowercase letter, one number, and one special character."
     //     });
     // }
-    
+
     //בדיקה על מייל שהוא יחודי
     let exist = await userModel.findOne({ email: body.email });
     if (exist)
@@ -57,16 +57,19 @@ export const addUser = async (req, res) => {
 
     try {
 
-        let token = generateToken({ ...body, role: "USER" });
+
 
         // הצפנת הסיסמה לפני שמירת המשתמש
         const hashedPassword = await bcrypt.hash(body.password, 10);
 
 
         // שמירה של המשתמש עם הסיסמה המוצפנת
-        let newUser = new userModel({ ...body, password: hashedPassword, token: token });
+        let newUser = new userModel({ ...body, password: hashedPassword });
         await newUser.save();
-        res.json(newUser);
+
+        let token = generateToken(newUser);
+
+        res.json({ ...newUser, token });
     } catch (err) {
         console.log(err);
         res.status(400).json({ title: "cannot add this user", message: err.message });
@@ -114,21 +117,21 @@ export const updatePassword = async (req, res) => {
         res.status(400).json({ title: "cannot update", message: err.message });
     }
 }
-
+//כניסה
 export async function getUserByUsernamePassword_Login(req, res) {
     try {
-        if (!req.body.password || !req.body.userName)
+        if (!req.body.password || !req.body.email)
             return res.status(404).json({ title: "miising username or password", message: "missing" });
-        let data = await userModel.findOne({ userName: req.body.userName }).lean();
+        let data = await userModel.findOne({ email: req.body.email }).lean();
         if (!data) {
-            return res.status(404).json({ title: "no such user", message: "cannot found user with such username" });
+            return res.status(404).json({ title: "no such user", message: "cannot found user with such email" });
         }
 
         let verifyPassword = await bcrypt.compare(req.body.password, data.password);
         if (!verifyPassword)
             return res.status(404).json({ title: "cannot found user with such deatekies", message: "worng password" });
 
-        let token = generateToken({ ...userModel, role: "USER" });
+        let token = generateToken({ ...data });
 
         let { password, ...other } = data;
 
