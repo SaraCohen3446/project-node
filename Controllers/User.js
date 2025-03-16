@@ -48,17 +48,17 @@ export const addUser = async (req, res) => {
     //     });
     // }
 
-    //בדיקה על מייל שהוא יחודי
-    let exist = await userModel.findOne({ email: body.email });
-    if (exist)
-        return res.status(409).json({ title: "cannot add user", message: "thid email alrday exist" });
-
-
+ 
+  
 
     try {
 
-
-
+   //בדיקה על מייל שהוא יחודי
+        let exist = await userModel.findOne({ email: body.email });
+        if (exist)
+            return res.status(409).json({ title: "cannot add user", message: "thid email alrday exist" });
+    
+    
         // הצפנת הסיסמה לפני שמירת המשתמש
         const hashedPassword = await bcrypt.hash(body.password, 10);
 
@@ -68,8 +68,8 @@ export const addUser = async (req, res) => {
         await newUser.save();
 
         let token = generateToken(newUser);
-
-        res.json({ ...newUser, token });
+    
+        res.json({ ...newUser.toObject(), token });
     } catch (err) {
         console.log(err);
         res.status(400).json({ title: "cannot add this user", message: err.message });

@@ -26,10 +26,10 @@ export const validateUser = (user) => {
             "string.email": "האימייל אינו תקין",
             "string.empty": "האימייל הוא שדה חובה"
         }),
-        // password: Joi.string().min(8).max(100).required().pattern(new RegExp("^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$")).messages({
-        //     "string.min": "הסיסמה חייבת להכיל לפחות 8 תווים",
-        //     "string.pattern.base": "הסיסמה חייבת לכלול אות גדולה, אות קטנה, מספר ותו מיוחד"
-        // }),
+        password: Joi.string().min(8).max(100).required().pattern(new RegExp("^[A-Za-z\\d]{8,}$")).messages({
+            "string.min": "הסיסמה חייבת להכיל לפחות 8 תווים",
+             "string.pattern": "הסיסמה חייבת לכלול אות גדולה, אות קטנה, מספר ותו מיוחד"
+        })
     }).unknown();
     return userJoi.validate(user);
 };
