@@ -2,8 +2,9 @@ import { orderModel } from "../models/order.js"
 import { userModel } from "../models/user.js"
 //שליפת כל ההזמנות
 export const getAllOrders = async (req, res) => {
+    let { limit = 2, page = 1 } = req.query;
     try {
-        let data = await orderModel.find();
+        let data = await orderModel.find().skip((page - 1) * limit).limit(limit);
         res.json(data);
     }
     catch (err) {

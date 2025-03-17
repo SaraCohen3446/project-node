@@ -38,19 +38,6 @@ export const addUser = async (req, res) => {
     let validate = validateUser(req.body);
     if (validate.error)
         return res.status(400).json(validate.error.details[0].message);
-
-    // בדיקת תקינות הסיסמה
-    // const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    // if (!passwordRegex.test(body.password)) {
-    //     return res.status(400).json({
-    //         title: "invalid password",
-    //         message: "Password must be at least 8 characters long and include one uppercase letter⏮️, one lowercase letter, one number, and one special character."
-    //     });
-    // }
-
- 
-  
-
     try {
 
    //בדיקה על מייל שהוא יחודי
