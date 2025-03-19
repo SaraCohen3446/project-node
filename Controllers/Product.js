@@ -2,7 +2,7 @@ import { productModel } from "../models/product.js";
 
 //שליפת כל המוצרים
 export const getAllProducts = async (req, res) => {
-    let { limit = 2, page = 1 } = req.query;
+    let { limit = 28, page = 1 } = req.query;
     try {
         let data = await productModel.find().skip((page - 1) * limit).limit(limit);
         res.json(data);
@@ -16,7 +16,7 @@ export const getAllProducts = async (req, res) => {
 
 //שליפת סה"כ עמודי מוצר
 export const totalPages = async (req, res) => {
-    let { limit = 2 } = req.query;
+    let { limit = 28 } = req.query;
     try {
         let data = await productModel.countDocuments()
         let total = Math.ceil(data / limit);
