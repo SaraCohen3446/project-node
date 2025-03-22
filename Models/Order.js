@@ -4,7 +4,7 @@ import { productSchema } from "./product.js"
 
 const minimalSchema = Schema({
     product: productSchema,
-    count: { type: Number, default: 0 }
+    count: { type: Number, default: 1 }
 })
 
 const orderSchema = Schema({
