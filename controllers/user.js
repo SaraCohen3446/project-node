@@ -40,12 +40,12 @@ export const addUser = async (req, res) => {
         return res.status(400).json(validate.error.details[0].message);
     try {
 
-   //בדיקה על מייל שהוא יחודי
+        //בדיקה על מייל שהוא יחודי
         let exist = await userModel.findOne({ email: body.email });
         if (exist)
             return res.status(409).json({ title: "cannot add user", message: "thid email alrday exist" });
-    
-    
+
+
         // הצפנת הסיסמה לפני שמירת המשתמש
         const hashedPassword = await bcrypt.hash(body.password, 10);
 
@@ -55,7 +55,7 @@ export const addUser = async (req, res) => {
         await newUser.save();
 
         let token = generateToken(newUser);
-    
+
         res.json({ ...newUser.toObject(), token });
     } catch (err) {
         console.log(err);
@@ -70,40 +70,60 @@ export const addUser = async (req, res) => {
 export const update = async (req, res) => {
     let { id } = req.params;
     let body = req.body;
+    
+    // אם הוזנה סיסמה, נחזיר שגיאה כי אסור לעדכן אותה כאן
     if (body.password)
         return res.status(404).json({ title: "cannot update password", message: "cannot update password here" });
 
+    // אימות הנתונים באמצעות ה־Joi
+    const { error } = validateUser(body);
+    if (error)
+        return res.status(400).json({ title: "invalid data", message: error.details[0].message });
+
     try {
+        // עדכון פרטי המשתמש
         let data = await userModel.findByIdAndUpdate(id, body, { new: true }).select('-password');
-        if (!data) return res.status(404).json({ title: "cannot update by id", message: "user with such id not found" });
+        if (!data)
+            return res.status(404).json({ title: "cannot update by id", message: "user with such id not found" });
+
         res.json(data);
     } catch (err) {
         console.log(err);
         res.status(400).json({ title: "cannot update", message: err.message });
     }
 }
+
 
 //עדכון סיסמא
 export const updatePassword = async (req, res) => {
     let { id } = req.params;
     let body = req.body;
+
+    // אם לא הוזנה סיסמה או אם יש שינוי בשם המשתמש או אימייל, נחזיר שגיאה
     if (!body.password || body.userName || body.email)
         return res.status(404).json({ title: "only update password", message: "cannot update email or userName" });
 
+    // אימות הסיסמה החדשה על פי הסכמה
+    const { error } = validateUser(body).error;
+    if (error)
+        return res.status(400).json({ title: "invalid password", message: error.details[0].message });
+
     try {
-
-
         // הצפנת הסיסמה החדשה לפני שמירתה
         const hashedPassword = await bcrypt.hash(body.password, 10);
 
+        // עדכון הסיסמה במסד הנתונים
         let data = await userModel.findByIdAndUpdate(id, { password: hashedPassword }, { new: true }).select('-password');
-        if (!data) return res.status(404).json({ title: "cannot update by id", message: "user with such id not found" });
+        if (!data)
+            return res.status(404).json({ title: "cannot update by id", message: "user with such id not found" });
+
         res.json(data);
     } catch (err) {
         console.log(err);
         res.status(400).json({ title: "cannot update", message: err.message });
     }
 }
+
 //כניסה
 export async function getUserByUsernamePassword_Login(req, res) {
     try {
