@@ -9,7 +9,8 @@ const minimalSchema = Schema({
 
 const orderSchema = Schema({
     date: { type: Date, default: new Date() },
-    dateEnd: { type: Date, default: new Date() + 1 },
+    dateEnd: { type: Date, default: 
+        new Date() + 1 },
     address: String,
     userId: {
         type: Types.ObjectId,
