@@ -74,14 +74,7 @@ export const update = async (req, res) => {
     // אם הוזנה סיסמה, נחזיר שגיאה כי אסור לעדכן אותה כאן
     if (body.password)
         return res.status(404).json({ title: "cannot update password", message: "cannot update password here" });
-
-    // אימות הנתונים באמצעות ה־Joi
-    const { error } = validateUser(body);
-    if (error)
-        return res.status(400).json({ title: "invalid data", message: error.details[0].message });
-
     try {
-        // עדכון פרטי המשתמש
         let data = await userModel.findByIdAndUpdate(id, body, { new: true }).select('-password');
         if (!data)
             return res.status(404).json({ title: "cannot update by id", message: "user with such id not found" });
@@ -102,17 +95,11 @@ export const updatePassword = async (req, res) => {
     // אם לא הוזנה סיסמה או אם יש שינוי בשם המשתמש או אימייל, נחזיר שגיאה
     if (!body.password || body.userName || body.email)
         return res.status(404).json({ title: "only update password", message: "cannot update email or userName" });
-
-    // אימות הסיסמה החדשה על פי הסכמה
-    const { error } = validateUser(body).error;
-    if (error)
-        return res.status(400).json({ title: "invalid password", message: error.details[0].message });
-
     try {
         // הצפנת הסיסמה החדשה לפני שמירתה
         const hashedPassword = await bcrypt.hash(body.password, 10);
 
-        // עדכון הסיסמה במסד הנתונים
+        // עדכון הסיסמה המוצפנת במסד הנתונים
         let data = await userModel.findByIdAndUpdate(id, { password: hashedPassword }, { new: true }).select('-password');
         if (!data)
             return res.status(404).json({ title: "cannot update by id", message: "user with such id not found" });
